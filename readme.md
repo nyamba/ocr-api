@@ -24,7 +24,7 @@ To shut down:
 docker-compose down
 ```
 
-To change the endpoints, update the code in [app.py]
+To change the endpoints, update the code in [app.py](app.py)
 ---
 
 MORE [http://allynh.com/blog/flask-asynchronous-background-tasks-with-celery-and-redis/]
