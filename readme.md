@@ -2,7 +2,6 @@
 
 A basic [Docker Compose](https://docs.docker.com/compose/) template for orchestrating a [Flask](http://flask.pocoo.org/) application & a [Celery](http://www.celeryproject.org/) queue with [Redis](https://redis.io/)
 
-![Queue architect](https://github.com/Tsevel/ocr-api/blob/master/img.png)
 
 ### Installation
 
