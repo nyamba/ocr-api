@@ -1,0 +1,21 @@
+version: '3'
+services:
+  flask-api:
+    build: .
+    ports:
+      - "5000:5000"
+  worker:
+    build: .
+    command: celery -A app.celery worker --loglevel=info
+    environment:
+      - AWS_ACCESS_KEY_ID=AKIA5QZPHQT4X5RYTG7W
+      - AWS_SECRET_ACCESS_KEY=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
+  monitor:
+    build: .
+    ports:
+      - "5555:5555"
+    command: flower -A app.celery --port=5555 --boker=redis://redis:6379/0
+    depends_on:
+      - redis
+  redis:
+    image: redis:alpine

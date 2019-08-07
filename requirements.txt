@@ -1,0 +1,10 @@
+flask
+celery
+Pillow
+pdf2image
+pytesseract
+boto3
+botocore
+PyPDF2
+redis
+flower
