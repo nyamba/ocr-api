@@ -1,4 +1,4 @@
-# Flask-Redis-Celery
+# Flask-Redis-Celery OCR
 
 #### **Description**
 Basic Flask app structure for integration with Redis and Celery.
