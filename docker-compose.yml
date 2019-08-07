@@ -6,7 +6,7 @@ services:
       - "5000:5000"
   worker:
     build: .
-    command: celery -A app.celery worker --loglevel=info
+    command: celery -A app.celery worker --loglevel=info --concurrency=2
     environment:
       - AWS_ACCESS_KEY_ID=AKIA5QZPHQT4X5RYTG7W
       - AWS_SECRET_ACCESS_KEY=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

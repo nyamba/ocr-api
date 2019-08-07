@@ -10,7 +10,7 @@ from flask  import Flask , request
 from celery import Celery
 
 
-DPI = 200
+DPI = 300
 flask_app = Flask(__name__)
 flask_app.config.update(
     CELERY_BROKER_URL='redis://redis:6379',
@@ -42,7 +42,7 @@ def extract_pdf(pdf_path, pages_len):
         start_time = time.time()
         print('extracting page: ', index+1, '/', pages_len)
         pil_images = pdf2image.convert_from_path(pdf_path, dpi=DPI, first_page=index+1, last_page=index+1)
-        text =  pytesseract.image_to_string(pil_images[0], lang='mon+eng+eq', config='--psm  6')
+        text =  pytesseract.image_to_string(pil_images[0], lang='mon+eng', config='--psm  6')
         end_time = time.time()
         print(text)
         print('#' * 15, ' time:' + str(end_time - start_time), '#'*15)

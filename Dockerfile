@@ -12,4 +12,5 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY . .
 RUN mkdir sample
+COPY tessdata/* /usr/share/tessdata/
 CMD ["flask", "run"]
