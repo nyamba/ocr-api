@@ -1,6 +1,12 @@
-# Docker Flask OCR app with Celery ,  Redis
+# Flask-Redis-Celery
 
-A basic [Docker Compose](https://docs.docker.com/compose/) template for orchestrating a [Flask](http://flask.pocoo.org/) application & a [Celery](http://www.celeryproject.org/) queue with [Redis](https://redis.io/)
+#### **Description**
+Basic Flask app structure for integration with Redis and Celery.
+
+Flask-Redis-Celery is divided in 3 microservices:
+- Flask is a Python Web Framework. Is the base webapp. (http://flask.pocoo.org)
+- Celery is an background asynchronous task service. (http://www.celeryproject.org)
+- Redis is in-memory data structure store, which can be used as a database, cache and message broker. Default Redis installation (password-protected)
 
 
 ### Installation
