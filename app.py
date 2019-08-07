@@ -11,6 +11,8 @@ from celery import Celery
 
 
 DPI = 300
+HASURA_SECRET = os.environ.get('HASURA_SECRET')
+
 flask_app = Flask(__name__)
 flask_app.config.update(
     CELERY_BROKER_URL='redis://redis:6379',
@@ -52,8 +54,10 @@ def extract_pdf(pdf_path, pages_len):
 
 
 @celery.task()
-def parse_pdf(file_key):
-    BUCKET_NAME = 'contents-demo1'
+def parse_pdf(data):
+    BUCKET_NAME = data['bucket']
+    file_key = data['key']
+
     s3 = boto3.resource('s3')
     s3.Bucket(BUCKET_NAME).download_file(file_key, 'sample/' + file_key)
     pdf_path = 'sample/' + file_key
@@ -74,9 +78,10 @@ def parse_pdf(file_key):
 
 
 
-@flask_app.route('/')
+@flask_app.route('/', methods=['GET', 'POST'])
 def add_task():
-    task = parse_pdf.delay(request.args['file_key'])
+    content = request.json
+    task = parse_pdf.delay(content)
     return 'ok ok'
 
 
