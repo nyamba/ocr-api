@@ -22,6 +22,11 @@ To shut down:
 ```bash
 docker-compose down
 ```
+Request:
+```
+https://localhost:5000/?file_key=WTf/pdf
+```
+
 
 To change the endpoints, update the code in [app.py](app.py)
 ---
