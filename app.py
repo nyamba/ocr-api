@@ -1,4 +1,4 @@
-import time, sys, os
+import time, sys, os, json
 
 import pdf2image
 import pytesseract
@@ -12,12 +12,18 @@ from celery import Celery
 
 DPI = 300
 HASURA_SECRET = os.environ.get('HASURA_SECRET')
+HASURA_GQL_URL = os.environ.get('HASURA_GQL_URL')
+PAGE_SEPERATOR = os.environ.get('PAGE_SEPERATOR')
 
 flask_app = Flask(__name__)
 flask_app.config.update(
     CELERY_BROKER_URL='redis://redis:6379',
     CELERY_RESULT_BACKEND='redis://redis:6379'
 )
+
+client = GraphQLClient(HASURA_GQL_URL)
+client.inject_token(HASURA_SECRET, 'x-hasura-admin-secret')
+
 
 def make_celery(app):
     celery = Celery(
@@ -38,7 +44,7 @@ def make_celery(app):
 
 celery = make_celery(flask_app)
 
-def extract_pdf(pdf_path, pages_len):
+def extract_pdf(pdf_path, pages_len, content_id):
     full_text = []
     for index in range(pages_len):
         start_time = time.time()
@@ -49,6 +55,8 @@ def extract_pdf(pdf_path, pages_len):
         print(text)
         print('#' * 15, ' time:' + str(end_time - start_time), '#'*15)
         full_text.append(text)
+        working_percent = int(((index + 1)/pages_len) * 100)
+        gq_update_status(content_id, working_percent)
 
     return full_text
 
@@ -57,6 +65,10 @@ def extract_pdf(pdf_path, pages_len):
 def parse_pdf(data):
     BUCKET_NAME = data['bucket']
     file_key = data['key']
+    content_id = data['content_id']
+
+    #set status to starting
+    gq_insert_entry(content_id)
 
     s3 = boto3.resource('s3')
     s3.Bucket(BUCKET_NAME).download_file(file_key, 'sample/' + file_key)
@@ -68,14 +80,16 @@ def parse_pdf(data):
 
     print('TOTAL PAGE: ', pages_len)
     start = time.time()
-    text = extract_pdf(pdf_path, pages_len)
+    full_text = extract_pdf(pdf_path, pages_len)
     end = time.time()
     print('Total time: ', round(end-start))
     os.remove(pdf_path)
     print('File Deleted : ' , pdf_path)
-    update_text(doc_id, full_text)
-    return 'DONE'
+    text = PAGE_SEPERATOR.join(full_text)
 
+    #set status done
+    update_text(content_id, text, len(full_text))
+    return 'DONE'
 
 
 @flask_app.route('/', methods=['GET', 'POST'])
@@ -85,9 +99,58 @@ def add_task():
     return 'ok ok'
 
 
-def update_text(doc_id, text):
-    pass
+def gq_insert_entry(content_id):
+    gql = '''
+    mutation{
+        delete_plagirism_content_texts(where:{content_id: {_eq: %d}}){
+            returning{
+              id
+              content_id
+            }
+          }
+        insert_plagirism_content_texts(objects: {content_id: %d, status:"start" ,text:""}){
+            returning{
+              id
+              content_id
+            }
+          }
+    }
+    ''' % (content_id, content_id)
+    result = client.execute(gql)
+    print(result)
 
 
-def update_status(doc_id, progress):
-    pass
+def gq_update_text(content_id, text, page_count):
+    gql = '''
+    mutation {
+      insert_plagirism_content_texts(
+      objects:{content_id: %d, text: "%s", status: "done",  meta: {page_count: %d}}
+      ){
+        returning{
+          id
+        }
+      }
+    }
+    ''' % (content_id, text, page_count)
+    result = client.execute(gql)
+    print(result)
+
+
+def gq_update_status(content_id, progress):
+    gql = '''
+    mutation {
+        update_plagirism_content_texts(
+            where: {content_id: {_eq: %d}}, 
+            _set: {status: "inprogress - %d"})
+            {
+                returning{
+                  id
+                  status
+                }
+            }
+    }
+    ''' % (content_id, progress)
+
+    result = client.execute(gql)
+    print(result)
+
