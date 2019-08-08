@@ -1,6 +1,6 @@
 FROM python:2.7-alpine
 
-RUN apk add --no-cache gcc musl-dev linux-headers \
+RUN apk add gcc musl-dev linux-headers \
 	poppler-utils tesseract-ocr \
 	build-base python-dev py-pip jpeg-dev zlib-dev 
 
