@@ -41,4 +41,6 @@ Request:
 curl --header "Content-Type: application/json" --request POST --data '{"content_id": 2803, "key": "10a2r67jxu0yqqh_ST_470002200_3584.PDF", "bucket": "contents-demo1"}' localhost:5000/
 ```
 
-
+### Monitoring Web
+http://localhost:5555
+![alt text](https://github.com/Tsevel/ocr-api/blob/master/flower.PNG)
