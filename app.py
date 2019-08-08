@@ -8,6 +8,7 @@ from PIL    import Image
 from PyPDF2 import PdfFileReader
 from flask  import Flask , request
 from celery import Celery
+from graphqlclient import GraphQLClient
 
 
 DPI = 300
@@ -55,8 +56,10 @@ def extract_pdf(pdf_path, pages_len, content_id):
         print(text)
         print('#' * 15, ' time:' + str(end_time - start_time), '#'*15)
         full_text.append(text)
-        working_percent = int(((index + 1)/pages_len) * 100)
-        gq_update_status(content_id, working_percent)
+        #TODO why is progress always 0
+        progress = (index+1)/pages_len * 100
+        print('percentage', index, pages_len, progress)
+        gq_update_status(content_id, index+1, PAGE_SEPERATOR.join(full_text))
 
     return full_text
 
@@ -80,7 +83,7 @@ def parse_pdf(data):
 
     print('TOTAL PAGE: ', pages_len)
     start = time.time()
-    full_text = extract_pdf(pdf_path, pages_len)
+    full_text = extract_pdf(pdf_path, pages_len, content_id)
     end = time.time()
     print('Total time: ', round(end-start))
     os.remove(pdf_path)
@@ -88,7 +91,7 @@ def parse_pdf(data):
     text = PAGE_SEPERATOR.join(full_text)
 
     #set status done
-    update_text(content_id, text, len(full_text))
+    gq_update_text(content_id, text, len(full_text))
     return 'DONE'
 
 
@@ -122,26 +125,32 @@ def gq_insert_entry(content_id):
 
 def gq_update_text(content_id, text, page_count):
     gql = '''
-    mutation {
-      insert_plagirism_content_texts(
-      objects:{content_id: %d, text: "%s", status: "done",  meta: {page_count: %d}}
-      ){
+    mutation update($content_id: bigint!, $text: String!, $meta: jsonb!){
+      update_plagirism_content_texts(
+            where: {content_id: {_eq: $content_id}}, 
+            _set: {status: "done", text: $text, meta: $meta})
+        {
         returning{
           id
         }
       }
     }
-    ''' % (content_id, text, page_count)
-    result = client.execute(gql)
+    '''
+    variables = {
+        "content_id": content_id,
+        "text": text,
+        "meta": {"page_count": page_count}
+    }
+    result = client.execute(gql, variables)
     print(result)
 
 
-def gq_update_status(content_id, progress):
+def gq_update_status(content_id, progress, text):
     gql = '''
-    mutation {
+    mutation update($content_id: bigint!, $progress: String!, $text: String!){
         update_plagirism_content_texts(
-            where: {content_id: {_eq: %d}}, 
-            _set: {status: "inprogress - %d"})
+            where: {content_id: {_eq: $content_id}}, 
+            _set: {status: $progress, text: $text})
             {
                 returning{
                   id
@@ -149,8 +158,12 @@ def gq_update_status(content_id, progress):
                 }
             }
     }
-    ''' % (content_id, progress)
-
-    result = client.execute(gql)
+    '''
+    variables = {
+        "content_id": content_id,
+        "progress": "inprogress - %d" % (progress),
+        "text": text
+    }
+    result = client.execute(gql, variables)
     print(result)
 

@@ -8,3 +8,4 @@ botocore
 PyPDF2
 redis
 flower
+graphqlclient
