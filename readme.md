@@ -20,7 +20,14 @@ git clone https://github.com/nyamba/ocr-api.git
 ```bash
 docker-compose build && docker-compose up -d 
 ```
-
+ ### ENV FILE
+ ```
+AWS_ACCESS_KEY_ID=<Your AWS key id>
+AWS_SECRET_ACCESS_KEY=<aws secret>
+HASURA_SECRET= < hasura key>
+HASURA_GQL_URL=< hasura url>
+PAGE_SEPERATOR=##############
+ ```
 
 
 To shut down:
@@ -30,7 +37,7 @@ docker-compose down
 ```
 Request:
 ```
-https://localhost:5000/?file_key=WTf/pdf
+curl --header "Content-Type: application/json" --request POST --data '{"content_id": 2803, "key": "10a2r67jxu0yqqh_ST_470002200_3584.PDF", "bucket": "contents-demo1"}' localhost:5000/
 ```
 
 
