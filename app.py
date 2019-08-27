@@ -105,13 +105,13 @@ def add_task():
 def gq_insert_entry(content_id):
     gql = '''
     mutation{
-        delete_plagirism_content_texts(where:{content_id: {_eq: %d}}){
+        delete_plagiarism_content_texts(where:{content_id: {_eq: %d}}){
             returning{
               id
               content_id
             }
           }
-        insert_plagirism_content_texts(objects: {content_id: %d, status:"start" ,text:""}){
+        insert_plagiarism_content_texts(objects: {content_id: %d, status:"start" ,text:""}){
             returning{
               id
               content_id
@@ -126,7 +126,7 @@ def gq_insert_entry(content_id):
 def gq_update_text(content_id, text, page_count):
     gql = '''
     mutation update($content_id: bigint!, $text: String!, $meta: jsonb!){
-      update_plagirism_content_texts(
+      update_plagiarism_content_texts(
             where: {content_id: {_eq: $content_id}}, 
             _set: {status: "done", text: $text, meta: $meta})
         {
@@ -148,7 +148,7 @@ def gq_update_text(content_id, text, page_count):
 def gq_update_status(content_id, progress, text):
     gql = '''
     mutation update($content_id: bigint!, $progress: String!, $text: String!){
-        update_plagirism_content_texts(
+        update_plagiarism_content_texts(
             where: {content_id: {_eq: $content_id}}, 
             _set: {status: $progress, text: $text})
             {
