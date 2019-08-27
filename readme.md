@@ -21,6 +21,7 @@ git clone https://github.com/nyamba/ocr-api.git
 docker-compose build && docker-compose up -d 
 ```
  ### ENV FILE
+ create .env file with following variables
  ```
 AWS_ACCESS_KEY_ID=<Your AWS key id>
 AWS_SECRET_ACCESS_KEY=<aws secret>
@@ -40,8 +41,6 @@ Request:
 curl --header "Content-Type: application/json" --request POST --data '{"content_id": 2803, "key": "10a2r67jxu0yqqh_ST_470002200_3584.PDF", "bucket": "contents-demo1"}' localhost:5000/
 ```
 
-
-To change the endpoints, update the code in [app.py](app.py)
----
-
-MORE [http://allynh.com/blog/flask-asynchronous-background-tasks-with-celery-and-redis/]
+### Monitoring Web
+http://localhost:5555
+![alt text](https://github.com/Tsevel/ocr-api/blob/master/flower.PNG)
